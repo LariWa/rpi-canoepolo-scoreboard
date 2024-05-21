@@ -47,6 +47,12 @@ using namespace std;
 Canvas *pCanvas_gl;
 Socket *pSocket_gl;
 
+rgb_matrix::Color bg_color(0, 0, 0);
+rgb_matrix::Color outline_color(255,255,255);
+
+int Training_Application(Canvas *canvas);
+int ShotClock_Application(Canvas *canvas);
+
 static void InterruptHandler(int signo) {
   if(pCanvas_gl != NULL){
     pCanvas_gl->Clear();
@@ -57,7 +63,6 @@ static void InterruptHandler(int signo) {
   }
   exit(0);
 }
-
 
 int main(int argc, char *argv[]) {
 
@@ -92,13 +97,113 @@ int main(int argc, char *argv[]) {
   signal(SIGINT, InterruptHandler);
 
 
-  rgb_matrix::Color bg_color(0, 0, 0);
-  rgb_matrix::Color outline_color(255,255,255);
 
+
+
+  // Evaluate GPIO to determine which app to start
+
+  if(1) {
+    Training_Application(canvas);
+  } else {
+    ShotClock_Application(canvas);
+  }
+
+}
+
+int Training_Application(Canvas *canvas)
+{
+
+#define FONT_TIME_NARROW_PATH "fonts2/LiberationSansNarrow_b11x17.bdf"
+#define FONT_TIME_WIDE_PATH "fonts2/LiberationSans_b13x17.bdf"
+// #define FONT_CLOCK_PATH "fonts2/LiberationSans_b10x12.bdf"
+#define FONT_CLOCK_PATH "fonts2/LiberationSansNarrow_b8x12.bdf"
+
+    /*
+   * Load bdf bitmap fonts.
+   */
+  rgb_matrix::Font font_clock, font_time_narrow, font_time_wide;
+
+  if (!font_clock.LoadFont("../" FONT_CLOCK_PATH)) {
+    if (!font_clock.LoadFont("Scoreboard/" FONT_CLOCK_PATH)) {
+        fprintf(stderr, "Couldn't load font '%s'\n", FONT_CLOCK_PATH);
+        return 1;
+    }
+  }
+  if (!font_time_narrow.LoadFont("../" FONT_TIME_NARROW_PATH)) {
+    if (!font_time_narrow.LoadFont("Scoreboard/" FONT_TIME_NARROW_PATH)) {
+        fprintf(stderr, "Couldn't load font '%s'\n", FONT_TIME_NARROW_PATH);
+        return 1;
+    }
+  }
+  if (!font_time_wide.LoadFont("../" FONT_TIME_WIDE_PATH)) {
+    if (!font_time_wide.LoadFont("Scoreboard/" FONT_TIME_WIDE_PATH)) {
+        fprintf(stderr, "Couldn't load font '%s'\n", FONT_TIME_WIDE_PATH);
+        return 1;
+    }
+  }
+
+
+
+
+  char sTime[24];
+  int GameCounter = 65, BreakCounter = 60, Clock = 18 * 3600;
+  bool Pause = false;
+  // rgb_matrix::DrawText(canvas, font_clock, 9, 13, color_red, &bg_color, "18:00");
+  // rgb_matrix::DrawText(canvas, font_std, 0, 32, color_white, &bg_color, "10:00");
+
+  while(1){
+    canvas->Clear();
+    rgb_matrix::DrawText(canvas, font_clock, 9, 13, color_red, &bg_color, "18:00");
+
+    // sprintf(sTime, "%2d:%02d", Clock/3600, (Clock/60)%3600);
+    // rgb_matrix::DrawText(canvas, font2, 9, 13, color_red,  &bg_color, sTime);
+    // Clock ++;
+
+
+    if(Pause) {
+      if(BreakCounter < 600) {
+        sprintf(sTime, "%1d:%02d", BreakCounter/60, BreakCounter%60);
+        rgb_matrix::DrawText(canvas, font_time_wide, 0, 32, color_yellow,  &bg_color, sTime);
+      } else {
+        sprintf(sTime, "%2d:%02d", BreakCounter/60, BreakCounter%60);
+        rgb_matrix::DrawText(canvas, font_time_narrow, 0, 32, color_yellow,  &bg_color, sTime);
+      }
+      if(BreakCounter == 0) {
+        Pause = false;
+        BreakCounter = 60;
+        continue;
+      } else {
+        BreakCounter--;
+      }
+    } else {
+      if(GameCounter < 600) {
+        sprintf(sTime, "%1d:%02d", GameCounter/60, GameCounter%60);
+        rgb_matrix::DrawText(canvas, font_time_wide, 0, 32, color_white,  &bg_color, sTime);
+      } else {
+        sprintf(sTime, "%2d:%02d", GameCounter/60, GameCounter%60);
+        rgb_matrix::DrawText(canvas, font_time_narrow, -4, 32, color_white,  &bg_color, sTime);
+      }
+      if(GameCounter == 0) {
+        Pause = true;
+        GameCounter = 600;
+        continue;
+      } else {
+        GameCounter--;
+      }
+
+    }
+    sleep(1);
+  }
+
+
+}
+
+int ShotClock_Application(Canvas *canvas)
+{
   /*
    * Load bdf bitmap fonts.
    */
-  rgb_matrix::Font font_std, font_narr;
+  rgb_matrix::Font font_std;
 
   if (!font_std.LoadFont("../fonts2/LiberationSansNarrow_bb32.bdf")) {
     if (!font_std.LoadFont("Scoreboard/fonts2/LiberationSansNarrow_bb32.bdf")) {
