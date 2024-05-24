@@ -1,7 +1,7 @@
 CFLAGS=-Wall -O3 -g3 -ggdb -Wextra -Wno-unused-parameter
 CXXFLAGS=$(CFLAGS)
 OBJECTS=demo-main.o minimal-example.o c-example.o text-example.o scrolling-text-example.o \
- clock.o ledcat.o input-example.o pixel-mover.o shotclock.o scoreboard.o
+ clock.o ledcat.o input-example.o pixel-mover.o shotclock.o scoreboard.o training_app.o
 BINARIES=demo minimal-example c-example text-example scrolling-text-example clock ledcat \
 input-example  pixel-mover shotclock scoreboard
 
@@ -33,7 +33,8 @@ pixel-mover : pixel-mover.o
 scoreboard : scoreboard.o  $(RGB_LIBRARY)
 	$(CXX) $< -o $@ $(LDFLAGS) libws.a -lncurses
 
-shotclock : shotclock.o
+shotclock : shotclock.o training_app.o
+	$(CXX) $< -o $@ $(LDFLAGS) training_app.o
 
 # All the binaries that have the same name as the object file.q
 % : %.o $(RGB_LIBRARY)
