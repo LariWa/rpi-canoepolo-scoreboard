@@ -37,7 +37,7 @@ using namespace std;
 
 
 
-int Training_Application(Canvas *canvas)
+int Training_Application(RGBMatrix *matrix)
 {
   rgb_matrix::Color color_red(255, 0, 0);
   rgb_matrix::Color color_yellow(250, 190, 0);
@@ -84,25 +84,30 @@ int Training_Application(Canvas *canvas)
   std::tm *tm;
 
   while(1){
-    canvas->Clear();
+    matrix->Clear();
     // sprintf(sTime, "%2d:%02d", Clock/3600, (Clock/60)%60);
     // Clock ++;
     std::time(&time_now); // update time
     tm = std::localtime(&time_now);
     strftime(sTime, sizeof(sTime), "%H:%M\n", tm);
 
+    uint32_t inputs = matrix->AwaitInputChange(1);
+    fprintf(stderr, "GPIO 21: %d ", inputs & (1<<21) ? 1:0);
+    fprintf(stderr, "\nGPIO-bits: 0x%0X\n", inputs & 0xFFFFFF);
+
     // Don't display clock if probably wrong
     if((tm->tm_hour >= 17) && (tm->tm_hour < 21)){
-      rgb_matrix::DrawText(canvas, font_clock, 9, 13, color_red,  &bg_color, sTime);
+      rgb_matrix::DrawText(matrix, font_clock, 9, 13, color_red,  &bg_color, sTime);
     }
 
+    #define YPOS 13
     if(Pause) {
       if(BreakCounter < 600) {
         sprintf(sTime, "%1d:%02d", BreakCounter/60, BreakCounter%60);
-        rgb_matrix::DrawText(canvas, font_time_wide, 0, 32, color_yellow,  &bg_color, sTime);
+        rgb_matrix::DrawText(matrix, font_clock, 0, YPOS, color_yellow,  &bg_color, sTime);
       } else {
         sprintf(sTime, "%2d:%02d", BreakCounter/60, BreakCounter%60);
-        rgb_matrix::DrawText(canvas, font_time_narrow, 0, 32, color_yellow,  &bg_color, sTime);
+        rgb_matrix::DrawText(matrix, font_clock, 0, YPOS, color_yellow,  &bg_color, sTime);
       }
       if(BreakCounter == 0) {
         Pause = false;
@@ -114,10 +119,10 @@ int Training_Application(Canvas *canvas)
     } else {
       if(GameCounter < 600) {
         sprintf(sTime, "%1d:%02d", GameCounter/60, GameCounter%60);
-        rgb_matrix::DrawText(canvas, font_time_wide, 0, 32, color_white,  &bg_color, sTime);
+        rgb_matrix::DrawText(matrix, font_clock, 0, YPOS, color_white,  &bg_color, sTime);
       } else {
         sprintf(sTime, "%2d:%02d", GameCounter/60, GameCounter%60);
-        rgb_matrix::DrawText(canvas, font_time_narrow, -4, 32, color_white,  &bg_color, sTime);
+        rgb_matrix::DrawText(matrix, font_clock, 0, YPOS, color_white,  &bg_color, sTime);
       }
       if(GameCounter == 0) {
         Pause = true;
