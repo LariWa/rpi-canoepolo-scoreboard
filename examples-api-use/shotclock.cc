@@ -72,18 +72,19 @@ int main(int argc, char *argv[]) {
 
   RGBMatrix::Options options;
   options.hardware_mapping = "regular";  // or e.g. "adafruit-hat"
-  options.rows = 16;
+  options.rows = 32;
   options.cols = 32;
-  options.chain_length = 3;
+  options.chain_length = 1;
   options.parallel = 1;
-  options.pixel_mapper_config = "V-mapper:Z;Rotate:90";
+  // options.pixel_mapper_config = "V-mapper:Z;Rotate:90";
   options.show_refresh_rate = false;
   options.pwm_lsb_nanoseconds = 300;
   options.brightness = 100;
-  options.multiplexing = 3;
+  options.multiplexing = 6;
   options.inverse_colors = false;
-  options.led_rgb_sequence = "RGB";
+  options.led_rgb_sequence = "BGR";
   options.pwm_bits = 2;
+  options.disable_hardware_pulsing = 1;
 
 
   Canvas *canvas = rgb_matrix::CreateMatrixFromFlags(&argc, &argv, &options);
