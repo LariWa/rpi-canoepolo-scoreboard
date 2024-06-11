@@ -37,7 +37,7 @@ using namespace std;
 
 
 
-int Training_Application(Canvas *canvas)
+int Training_Application(RGBMatrix *matrix)
 {
   rgb_matrix::Color color_red(255, 0, 0);
   rgb_matrix::Color color_yellow(250, 190, 0);
@@ -78,53 +78,74 @@ int Training_Application(Canvas *canvas)
   }
 
   char sTime[24];
-  int GameCounter = 600, BreakCounter = 60; //, Clock = 18 * 3600;
-  bool Pause = false;
+  int GameCounter = 600, BreakCounter = 30; //, Clock = 18 * 3600;
+  bool Pause = true;
   std::time_t time_now;
   std::tm *tm;
+  bool run = false;
+  int resetcounter = 0;
 
   while(1){
-    canvas->Clear();
+    matrix->Clear();
     // sprintf(sTime, "%2d:%02d", Clock/3600, (Clock/60)%60);
     // Clock ++;
     std::time(&time_now); // update time
     tm = std::localtime(&time_now);
     strftime(sTime, sizeof(sTime), "%H:%M\n", tm);
 
+    uint32_t inputs = matrix->AwaitInputChange(1);
+    fprintf(stderr, "GPIO 20: %d ", inputs & (1<<19) ? 1:0);
+    fprintf(stderr, "GPIO 21: %d\n", inputs & (1<<26) ? 1:0);
+
     // Don't display clock if probably wrong
     if((tm->tm_hour >= 17) && (tm->tm_hour < 21)){
-      rgb_matrix::DrawText(canvas, font_clock, 9, 13, color_red,  &bg_color, sTime);
+      rgb_matrix::DrawText(matrix, font_clock, 9, 13, color_red,  &bg_color, sTime);
     }
 
-    if(Pause) {
-      if(BreakCounter < 600) {
-        sprintf(sTime, "%1d:%02d", BreakCounter/60, BreakCounter%60);
-        rgb_matrix::DrawText(canvas, font_time_wide, 0, 32, color_yellow,  &bg_color, sTime);
-      } else {
-        sprintf(sTime, "%2d:%02d", BreakCounter/60, BreakCounter%60);
-        rgb_matrix::DrawText(canvas, font_time_narrow, 0, 32, color_yellow,  &bg_color, sTime);
-      }
-      if(BreakCounter == 0) {
+    // reset
+    if(inputs & (1<<20)) {
+      resetcounter ++;
+      if (resetcounter > 3) {
+        resetcounter = 0;
         Pause = false;
-        BreakCounter = 60;
-        continue;
-      } else {
-        BreakCounter--;
-      }
-    } else {
-      if(GameCounter < 600) {
-        sprintf(sTime, "%1d:%02d", GameCounter/60, GameCounter%60);
-        rgb_matrix::DrawText(canvas, font_time_wide, 0, 32, color_white,  &bg_color, sTime);
-      } else {
-        sprintf(sTime, "%2d:%02d", GameCounter/60, GameCounter%60);
-        rgb_matrix::DrawText(canvas, font_time_narrow, -4, 32, color_white,  &bg_color, sTime);
-      }
-      if(GameCounter == 0) {
-        Pause = true;
         GameCounter = 600;
-        continue;
+        sprintf(sTime, "%2d:%02d", GameCounter/60, GameCounter%60);
+        rgb_matrix::DrawText(matrix, font_time_narrow, -4, 32, color_white,  &bg_color, sTime);
+      }
+    }
+
+    // start / stop
+    if(inputs & (1<<21)) {
+      if(Pause) {
+        if(BreakCounter < 600) {
+          sprintf(sTime, "%1d:%02d", BreakCounter/60, BreakCounter%60);
+          rgb_matrix::DrawText(matrix, font_time_wide, 0, 32, color_yellow,  &bg_color, sTime);
+        } else {
+          sprintf(sTime, "%2d:%02d", BreakCounter/60, BreakCounter%60);
+          rgb_matrix::DrawText(matrix, font_time_narrow, 0, 32, color_yellow,  &bg_color, sTime);
+        }
+        if(BreakCounter == 0) {
+          Pause = false;
+          BreakCounter = 30;
+          continue;
+        } else {
+          BreakCounter--;
+        }
       } else {
-        GameCounter--;
+        if(GameCounter < 600) {
+          sprintf(sTime, "%1d:%02d", GameCounter/60, GameCounter%60);
+          rgb_matrix::DrawText(matrix, font_time_wide, 0, 32, color_white,  &bg_color, sTime);
+        } else {
+          sprintf(sTime, "%2d:%02d", GameCounter/60, GameCounter%60);
+          rgb_matrix::DrawText(matrix, font_time_narrow, -4, 32, color_white,  &bg_color, sTime);
+        }
+        if(GameCounter == 0) {
+          Pause = true;
+          GameCounter = 600;
+          continue;
+        } else {
+          GameCounter--;
+        }
       }
     }
     sleep(1);

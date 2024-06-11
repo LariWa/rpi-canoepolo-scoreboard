@@ -45,19 +45,19 @@ rgb_matrix::Color color_orange(250, 130, 0);
 
 using namespace std;
 
-Canvas *pCanvas_gl;
+RGBMatrix *pRGBMatrix_gl;
 Socket *pSocket_gl;
 
 rgb_matrix::Color bg_color(0, 0, 0);
 rgb_matrix::Color outline_color(255,255,255);
 
-int Training_Application(Canvas *canvas);
-int ShotClock_Application(Canvas *canvas);
+int Training_Application(RGBMatrix *matrix);
+int ShotClock_Application(RGBMatrix *matrix);
 
 static void InterruptHandler(int signo) {
-  if(pCanvas_gl != NULL){
-    pCanvas_gl->Clear();
-    delete pCanvas_gl;
+  if(pRGBMatrix_gl != NULL){
+    pRGBMatrix_gl->Clear();
+    delete pRGBMatrix_gl;
   }
   if(pSocket_gl != NULL){
     pSocket_gl->Close();
@@ -86,10 +86,10 @@ int main(int argc, char *argv[]) {
   options.pwm_bits = 2;
 
 
-  Canvas *canvas = rgb_matrix::CreateMatrixFromFlags(&argc, &argv, &options);
-  if (canvas == NULL)
+  RGBMatrix *matrix = rgb_matrix::CreateMatrixFromFlags(&argc, &argv, &options);
+  if (matrix == NULL)
     return 1;
-  pCanvas_gl = canvas;
+  pRGBMatrix_gl = matrix;
 
   // It is always good to set up a signal handler to cleanly exit when we
   // receive a CTRL-C for instance. The DrawOnCanvas() routine is looking
@@ -97,21 +97,16 @@ int main(int argc, char *argv[]) {
   signal(SIGTERM, InterruptHandler);
   signal(SIGINT, InterruptHandler);
 
-
-
-
-
   // Evaluate GPIO to determine which app to start
-
-  if(1) {
-    Training_Application(canvas);
+  uint32_t inputs = matrix->AwaitInputChange(1);
+  if(inputs & (1<<12)) {
+    ShotClock_Application(matrix);
   } else {
-    ShotClock_Application(canvas);
+    Training_Application(matrix);
   }
-
 }
 
-int ShotClock_Application(Canvas *canvas)
+int ShotClock_Application(RGBMatrix *matrix)
 {
   /*
    * Load bdf bitmap fonts.
@@ -126,7 +121,7 @@ int ShotClock_Application(Canvas *canvas)
     }
   }
 
-  rgb_matrix::DrawText(canvas, font_std, 3, 32, color_white, &bg_color, "--");
+  rgb_matrix::DrawText(matrix, font_std, 3, 32, color_white, &bg_color, "--");
 
   // --- Socket ---
   int read_size;
@@ -171,8 +166,8 @@ int ShotClock_Application(Canvas *canvas)
           if (read_timeout < 10) {
               printf("Read timed out (%d)\n", read_timeout);
               disp_data = "-" + to_string(read_timeout);
-              canvas->Clear();
-              rgb_matrix::DrawText(canvas, font_std, 3, 32, color_red, &bg_color, disp_data.c_str());
+              matrix->Clear();
+              rgb_matrix::DrawText(matrix, font_std, 3, 32, color_red, &bg_color, disp_data.c_str());
               printf("Display updated\n");
               read_timeout++;
           } else {
@@ -192,15 +187,15 @@ int ShotClock_Application(Canvas *canvas)
           // Writa data only if changed
           if (response != disp_data) {
             disp_data = response;
-            canvas->Clear();
-            rgb_matrix::DrawText(canvas, font_std, 3, 32, color_white, &bg_color, disp_data.c_str());
+            matrix->Clear();
+            rgb_matrix::DrawText(matrix, font_std, 3, 32, color_white, &bg_color, disp_data.c_str());
             printf("Display updated\n");
           }
         }
 
       }
-      canvas->Clear();
-      rgb_matrix::DrawText(canvas, font_std, 3, 32, color_white, &bg_color, "--");
+      matrix->Clear();
+      rgb_matrix::DrawText(matrix, font_std, 3, 32, color_white, &bg_color, "--");
     }
   }
 }
