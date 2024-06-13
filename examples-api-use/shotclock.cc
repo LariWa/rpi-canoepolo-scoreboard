@@ -32,6 +32,7 @@
 #include "DisplayData.hh"
 #include "socket.hh"
 #include <ctime>
+#include <pigpio.h>
 
 using rgb_matrix::RGBMatrix;
 using rgb_matrix::Canvas;
@@ -67,6 +68,10 @@ static void InterruptHandler(int signo) {
 
 int main(int argc, char *argv[]) {
 
+  if (gpioInitialise() < 0) {
+    return 1;
+  }
+
   rgb_matrix::RuntimeOptions runtime;
   runtime.gpio_slowdown = 1;
 
@@ -84,6 +89,7 @@ int main(int argc, char *argv[]) {
   options.inverse_colors = false;
   options.led_rgb_sequence = "RGB";
   options.pwm_bits = 2;
+  //options.disable_hardware_pulsing = 1;
 
 
   RGBMatrix *matrix = rgb_matrix::CreateMatrixFromFlags(&argc, &argv, &options);
@@ -97,9 +103,11 @@ int main(int argc, char *argv[]) {
   signal(SIGTERM, InterruptHandler);
   signal(SIGINT, InterruptHandler);
 
+  gpioSetMode(12, PI_INPUT);
+  gpioSetPullUpDown(12, PI_PUD_UP);
+
   // Evaluate GPIO to determine which app to start
-  uint32_t inputs = matrix->AwaitInputChange(1);
-  if(inputs & (1<<12)) {
+  if(gpioRead(12)) {
     ShotClock_Application(matrix);
   } else {
     Training_Application(matrix);

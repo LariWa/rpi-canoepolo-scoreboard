@@ -34,7 +34,7 @@ scoreboard : scoreboard.o  $(RGB_LIBRARY)
 	$(CXX) $< -o $@ $(LDFLAGS) libws.a -lncurses
 
 shotclock : shotclock.o training_app.o
-	$(CXX) $< -o $@ $(LDFLAGS) training_app.o
+	$(CXX) $< -o $@ $(LDFLAGS) training_app.o -lpigpio
 
 # All the binaries that have the same name as the object file.q
 % : %.o $(RGB_LIBRARY)
