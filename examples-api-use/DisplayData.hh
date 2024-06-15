@@ -86,6 +86,11 @@ public:
       m_nPlayTimeSec = nMin*60 + nSec;
   }
 
+  void setShotclockTime(int nSec)
+  {
+      m_nShotTimeout = nSec;
+  }
+
   void decTime()  { m_nPlayTimeSec--; }
 
   void modifyTime(int nValue)
@@ -162,6 +167,16 @@ public:
   colors_t getColorIndexA(void){ return m_teamAColorIndex; }
 
   colors_t getColorIndexB(void){ return m_teamBColorIndex; }
+
+
+  void setColorA_RGB (int r, int g, int b) {
+
+  }
+
+  void setColorB_RGB (int r, int g, int b) {
+
+  }
+
 
   void swapTeamColors(void){
     colors_t tmp = m_teamAColorIndex;

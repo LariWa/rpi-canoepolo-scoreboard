@@ -42,7 +42,7 @@ extern "C"{
 #ifndef CROSS_COMPILING
 /* Set this define if ncurses lib is not available.
 It is used for direct action on keyboard input without the need to press return */
-#define USE_NCURSES
+// #define USE_NCURSES
 #endif
 
 #ifdef USE_NCURSES
@@ -537,10 +537,19 @@ void onmessage(int fd, const unsigned char *msg, uint64_t size, int type)
       std::vector<std::string> keyValue = split(pair, '=');
       if (keyValue.size() == 2) {
           if(keyValue[0] == "Time") dispData.setTime(stoi(keyValue[1]));
-          // else if(keyValue[0] == "Shotclock") dispData.??(stoi(keyValue[1]));
+          else if(keyValue[0] == "Shotclock") dispData.setShotclockTime(stoi(keyValue[1]));
           else if(keyValue[0] == "ScoreL") dispData.setScoreA(stoi(keyValue[1]));
           else if(keyValue[0] == "ScoreR") dispData.setScoreB(stoi(keyValue[1]));
-          // else if(keyValue[0] == "ColorL") dispData.setColorA(keyValue[1]);
+          else if(keyValue[0] == "ColorL") {
+            std::vector<std::string> colorRGB = split(keyValue[1], ',');
+            printf("Color L: %d %d %d\n", stoi(colorRGB[0]), stoi(colorRGB[1]), stoi(colorRGB[2]));
+            dispData.setColorA_RGB(stoi(colorRGB[0]), stoi(colorRGB[1]), stoi(colorRGB[2]));
+          }
+          else if(keyValue[0] == "ColorR") {
+            std::vector<std::string> colorRGB = split(keyValue[1], ',');
+            printf("Color R: %d %d %d\n", stoi(colorRGB[0]), stoi(colorRGB[1]), stoi(colorRGB[2]));
+            dispData.setColorB_RGB(stoi(colorRGB[0]), stoi(colorRGB[1]), stoi(colorRGB[2]));
+          }
       }
   }
 
