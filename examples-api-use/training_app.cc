@@ -142,15 +142,7 @@ int Training_Application(RGBMatrix *matrix)
       rgb_matrix::DrawText(matrix, font_time_narrow, -4, 32, color_white,  &bg_color, sTime);
     }
 
-    // start / stop
     if(Pause) {
-      if(BreakCounter < 600) {
-        sprintf(sTime, "%1d:%02d", BreakCounter/60, BreakCounter%60);
-        rgb_matrix::DrawText(matrix, font_time_wide, 0, 32, color_yellow,  &bg_color, sTime);
-      } else {
-        sprintf(sTime, "%2d:%02d", BreakCounter/60, BreakCounter%60);
-        rgb_matrix::DrawText(matrix, font_time_narrow, 0, 32, color_yellow,  &bg_color, sTime);
-      }
       if(BreakCounter == 0) {
         Pause = false;
         BreakCounter = PAUSE_TIME;
@@ -158,20 +150,27 @@ int Training_Application(RGBMatrix *matrix)
       } else {
         if(run) BreakCounter--;
       }
-    } else {
-      if(GameCounter < 600) {
-        sprintf(sTime, "%1d:%02d", GameCounter/60, GameCounter%60);
-        rgb_matrix::DrawText(matrix, font_time_wide, 0, 32, color_white,  &bg_color, sTime);
+      if(BreakCounter < 600) {
+        sprintf(sTime, "%1d:%02d", BreakCounter/60, BreakCounter%60);
+        rgb_matrix::DrawText(matrix, font_time_wide, 0, 32, color_yellow,  &bg_color, sTime);
       } else {
-        sprintf(sTime, "%2d:%02d", GameCounter/60, GameCounter%60);
-        rgb_matrix::DrawText(matrix, font_time_narrow, -4, 32, color_white,  &bg_color, sTime);
+        sprintf(sTime, "%2d:%02d", BreakCounter/60, BreakCounter%60);
+        rgb_matrix::DrawText(matrix, font_time_narrow, 0, 32, color_yellow,  &bg_color, sTime);
       }
+    } else {
       if(GameCounter == 0) {
         Pause = true;
         GameCounter = PLAY_TIME;
         continue;
       } else {
         if(run) GameCounter--;
+      }
+      if(GameCounter < 600) {
+        sprintf(sTime, "%1d:%02d", GameCounter/60, GameCounter%60);
+        rgb_matrix::DrawText(matrix, font_time_wide, 0, 32, color_white,  &bg_color, sTime);
+      } else {
+        sprintf(sTime, "%2d:%02d", GameCounter/60, GameCounter%60);
+        rgb_matrix::DrawText(matrix, font_time_narrow, -4, 32, color_white,  &bg_color, sTime);
       }
     }
     sleep(1);
