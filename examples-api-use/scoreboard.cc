@@ -124,6 +124,9 @@ int main(int argc, char *argv[]) {
   initscr();
   noecho();
   timeout(-1); // set to blocking mode - otherwise time out value
+  printf("Scoreboard started. Exit with q\n");
+#else
+  printf("Scoreboard started. Exit with q and Enter\n");
 #endif
 
   Canvas *canvas = rgb_matrix::CreateMatrixFromFlags(&argc, &argv, &options);
@@ -553,6 +556,7 @@ void onmessage(int fd, const unsigned char *msg, uint64_t size, int type)
           }
       }
   }
+
 
   if(strstr((const char*)msg,"update") != NULL){
     // do nothing, just send data
