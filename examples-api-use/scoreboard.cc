@@ -525,9 +525,10 @@ void onmessage(int fd, const unsigned char *msg, uint64_t size, int type)
     msg, size, type, cli, fd);
   free(cli);
 
-  // std::string input = "ColorA=0,0,0;ColorB=0,0,0;ScoreA=0;ScoreB=0;Time=0;Shotclock=0";
-  std::string input(reinterpret_cast<const char *>(msg));
+  if(size == 0) return;
 
+  // std::string input = "ColorL=0,0,0;ColorR=0,0,0;ScoreL=0;ScoreR=0;Time=0;Shotclock=0";
+  std::string input(reinterpret_cast<const char *>(msg));
   // Split the input string by semicolons to get key-value pairs
   std::vector<std::string> pairs = split(input, ';');
 
