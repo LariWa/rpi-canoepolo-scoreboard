@@ -505,6 +505,17 @@ void onclose(int fd)
   free(cli);
 }
 
+// Function to split a string by a delimiter and return a vector of substrings
+std::vector<std::string> split(const std::string &str, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(str);
+    while (std::getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
 void onmessage(int fd, const unsigned char *msg, uint64_t size, int type)
 {
   char *cli;
@@ -514,6 +525,24 @@ void onmessage(int fd, const unsigned char *msg, uint64_t size, int type)
     msg, size, type, cli, fd);
   free(cli);
 
+  // std::string input = "ColorA=0,0,0;ColorB=0,0,0;ScoreA=0;ScoreB=0;Time=0;Shotclock=0";
+  std::string input(reinterpret_cast<const char *>(msg));
+
+  // Split the input string by semicolons to get key-value pairs
+  std::vector<std::string> pairs = split(input, ';');
+
+  // Iterate over each pair
+  for (const auto &pair : pairs) {
+      // Split each pair by the equals sign to separate key and value
+      std::vector<std::string> keyValue = split(pair, '=');
+      if (keyValue.size() == 2) {
+          if(keyValue[0] == "Time") dispData.setTime(stoi(keyValue[1]));
+          // else if(keyValue[0] == "Shotclock") dispData.??(stoi(keyValue[1]));
+          else if(keyValue[0] == "ScoreL") dispData.setScoreA(stoi(keyValue[1]));
+          else if(keyValue[0] == "ScoreR") dispData.setScoreB(stoi(keyValue[1]));
+          // else if(keyValue[0] == "ColorL") dispData.setColorA(keyValue[1]);
+      }
+  }
 
   if(strstr((const char*)msg,"update") != NULL){
     // do nothing, just send data
