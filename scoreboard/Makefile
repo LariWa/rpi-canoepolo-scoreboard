@@ -1,6 +1,6 @@
 CFLAGS=-Wall -O3 -g3 -ggdb -Wextra -Wno-unused-parameter
 CXXFLAGS=$(CFLAGS)
-OBJECTS=shotclock.o scoreboard.o
+OBJECTS=shotclock.o scoreboard.o ShotclockCom.o KeyboardInput.o
 BINARIES=shotclock scoreboard
 
 # Where our library resides. You mostly only need to change the
@@ -17,8 +17,8 @@ all : $(BINARIES)
 $(RGB_LIBRARY): FORCE
 	$(MAKE) -C $(RGB_LIBDIR)
 
-scoreboard : scoreboard.o  $(RGB_LIBRARY)
-	$(CXX) $< -o $@ $(LDFLAGS) libws.a -lncurses
+scoreboard : scoreboard.o ShotclockCom.o KeyboardInput.o $(RGB_LIBRARY)
+	$(CXX) $< -o $@ $(LDFLAGS) ShotclockCom.o KeyboardInput.o libws.a -lncurses
 
 shotclock : shotclock.o
 
