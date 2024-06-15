@@ -63,6 +63,7 @@ static void InterruptHandler(int signo) {
   if(pSocket_gl != NULL){
     pSocket_gl->Close();
   }
+  gpioTerminate();
   exit(0);
 }
 
@@ -105,6 +106,8 @@ int main(int argc, char *argv[]) {
 
   gpioSetMode(12, PI_INPUT);
   gpioSetPullUpDown(12, PI_PUD_UP);
+  // gpioSetSignalFunc(SIGKILL, InterruptHandler);
+  // gpioSetSignalFunc(SIGTERM, InterruptHandler);
 
   // Evaluate GPIO to determine which app to start
   if(gpioRead(12)) {
