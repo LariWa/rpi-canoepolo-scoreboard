@@ -31,11 +31,40 @@
 // #include <string>
 #include <ctime>
 #include <pigpio.h>
+#include <thread>         // std::thread
 
 using rgb_matrix::RGBMatrix;
 using rgb_matrix::Canvas;
 using namespace std;
+bool run = false, reset = false;
 
+#define PLAY_TIME 600 // in sec
+#define PAUSE_TIME 10 // in sec
+
+void pollButtons()
+{
+  while(1)
+  {
+    if (!gpioRead(21)) {
+      int longPressCounter = 0;
+      while (!gpioRead(21)){  // Waiting for release
+        longPressCounter ++;
+        if (longPressCounter > 2000) break;
+        usleep(1000);
+      }
+      if (longPressCounter > 2000) {
+        reset = true;
+        longPressCounter = 0;
+        printf("resetting ..\n");
+        while (!gpioRead(21));  // Waiting for release
+      } else {
+        run = !run;
+        printf("run = %d (button state: %d)\n", run, !gpioRead(21));
+      }
+    }
+    usleep(50000);
+  }
+}
 
 
 int Training_Application(RGBMatrix *matrix)
@@ -79,16 +108,15 @@ int Training_Application(RGBMatrix *matrix)
   }
 
   char sTime[24];
-  int GameCounter = 600, BreakCounter = 30; //, Clock = 18 * 3600;
+  int GameCounter = PLAY_TIME, BreakCounter = PAUSE_TIME; //, Clock = 18 * 3600;
   bool Pause = true;
   std::time_t time_now;
   std::tm *tm;
-  int resetcounter = 0;
-
   gpioSetMode(20, PI_INPUT);
   gpioSetMode(21, PI_INPUT);
   gpioSetPullUpDown(20, PI_PUD_UP);
   gpioSetPullUpDown(21, PI_PUD_UP);
+  std::thread poll_thread (pollButtons);
 
   while(1){
     matrix->Clear();
@@ -105,16 +133,14 @@ int Training_Application(RGBMatrix *matrix)
     rgb_matrix::DrawText(matrix, font_clock, 9, 13, color_red,  &bg_color, sTime);
 
     // reset
-    // if(gpioRead(20)) {
-    //   resetcounter ++;
-    //   if (resetcounter > 3) {
-    //     resetcounter = 0;
-    //     Pause = false;
-    //     GameCounter = 600;
-    //     sprintf(sTime, "%2d:%02d", GameCounter/60, GameCounter%60);
-    //     rgb_matrix::DrawText(matrix, font_time_narrow, -4, 32, color_white,  &bg_color, sTime);
-    //   }
-    // }
+    if(reset) {
+      reset = false;
+      run = false;
+      Pause = false;
+      GameCounter = PLAY_TIME;
+      sprintf(sTime, "%2d:%02d", GameCounter/60, GameCounter%60);
+      rgb_matrix::DrawText(matrix, font_time_narrow, -4, 32, color_white,  &bg_color, sTime);
+    }
 
     // start / stop
     if(Pause) {
@@ -127,10 +153,10 @@ int Training_Application(RGBMatrix *matrix)
       }
       if(BreakCounter == 0) {
         Pause = false;
-        BreakCounter = 30;
+        BreakCounter = PAUSE_TIME;
         continue;
       } else {
-        if(!gpioRead(21)) BreakCounter--;
+        if(run) BreakCounter--;
       }
     } else {
       if(GameCounter < 600) {
@@ -142,10 +168,10 @@ int Training_Application(RGBMatrix *matrix)
       }
       if(GameCounter == 0) {
         Pause = true;
-        GameCounter = 600;
+        GameCounter = PLAY_TIME;
         continue;
       } else {
-        if(!gpioRead(21)) GameCounter--;
+        if(run) GameCounter--;
       }
     }
     sleep(1);
