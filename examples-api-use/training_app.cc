@@ -98,10 +98,11 @@ int Training_Application(RGBMatrix *matrix)
     tm = std::localtime(&time_now);
     strftime(sTime, sizeof(sTime), "%H:%M\n", tm);
 
-    // Don't display clock if probably wrong
-    if((tm->tm_hour >= 17) && (tm->tm_hour < 21)){
-      rgb_matrix::DrawText(matrix, font_clock, 9, 13, color_red,  &bg_color, sTime);
-    }
+    // // Don't display clock if probably wrong
+    // if((tm->tm_hour >= 17) && (tm->tm_hour < 21)){
+    //   rgb_matrix::DrawText(matrix, font_clock, 9, 13, color_red,  &bg_color, sTime);
+    // }
+    rgb_matrix::DrawText(matrix, font_clock, 9, 13, color_red,  &bg_color, sTime);
 
     // reset
     // if(gpioRead(20)) {
