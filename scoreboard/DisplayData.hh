@@ -10,6 +10,8 @@
 
 #include <unistd.h>
 #include <time.h>
+#include <vector>
+#include "graphics.h"
 
 typedef enum states { idle, running, paused } states_t;
 typedef enum colors { white, yellow, red, blue, green, orange, violet } colors_t;
@@ -21,7 +23,15 @@ class DisplayData
 public:
   DisplayData() : m_nScoreA(0), m_nScoreB(0), m_nPlayTimeSec(600), m_nShotTimeout(60), m_teamAColorIndex(green), m_teamBColorIndex(red),
    m_nStartTime(0), m_nSeconds(0), m_nSecondsLast(0), m_bTimerStarted(false),
-  m_state(idle), m_shotclockState(idle), m_bUpdateDisplay(true), m_bUpdateShotclock(true) { }
+   m_state(idle), m_shotclockState(idle), m_bUpdateDisplay(true), m_bUpdateShotclock(true),
+   m_colorList {rgb_matrix::Color(200, 200, 200),
+                rgb_matrix::Color(250, 190, 0),
+                rgb_matrix::Color(255, 0, 0),
+                rgb_matrix::Color(0, 50, 255),
+                rgb_matrix::Color(0, 200, 0),
+                rgb_matrix::Color(250, 130, 0),
+                rgb_matrix::Color(220, 0, 220)}
+  { }
 
   int getScoreA()  { return m_nScoreA; }
 
@@ -164,25 +174,6 @@ public:
     }
   }
 
-  colors_t getColorIndexA(void){ return m_teamAColorIndex; }
-
-  colors_t getColorIndexB(void){ return m_teamBColorIndex; }
-
-
-  void setColorA_RGB (int r, int g, int b) {
-
-  }
-
-  void setColorB_RGB (int r, int g, int b) {
-
-  }
-
-
-  void swapTeamColors(void){
-    colors_t tmp = m_teamAColorIndex;
-    m_teamAColorIndex = m_teamBColorIndex;
-    m_teamBColorIndex = tmp;
-  }
 
   void swapTeams(void){
     if (m_state == idle || m_nPlayTimeSec == 0)
@@ -195,24 +186,56 @@ public:
       SetRefresh(true);
     }
   }
-  void resetColors(void){
-    m_teamAColorIndex = green;
-    m_teamBColorIndex = red;
+
+  // Colors
+  rgb_matrix::Color* getColorA(void) {
+     return &m_ColorA;
   }
 
-  void nextColorIndexA(void){
+  rgb_matrix::Color* getColorB(void) {
+     return &m_ColorB;
+  }
+
+  void setColorA_RGB (int r, int g, int b) {
+    m_ColorA = rgb_matrix::Color(r,g,b);
+  }
+
+  void setColorB_RGB (int r, int g, int b) {
+    m_ColorB = rgb_matrix::Color(r,g,b);
+  }
+
+  void swapTeamColors(void){
+    colors_t tmp = m_teamAColorIndex;
+    m_teamAColorIndex = m_teamBColorIndex;
+    m_teamBColorIndex = tmp;
+    m_ColorA = m_colorList[m_teamAColorIndex];
+    m_ColorB = m_colorList[m_teamBColorIndex];
+  }
+
+  void resetColors(void){
+    m_teamAColorIndex = red;
+    m_teamBColorIndex = green;
+    m_ColorA = m_colorList[m_teamAColorIndex];
+    m_ColorB = m_colorList[m_teamBColorIndex];
+  }
+
+  void nextColorA(void){
     if (m_state != running){
       m_teamAColorIndex = (colors_t)((int)m_teamAColorIndex+1);
-      if(m_teamAColorIndex >= NUM_COLORS)
+      if(m_teamAColorIndex >= m_colorList.size()){
         m_teamAColorIndex = (colors_t)0;
+      }
+      m_ColorA = m_colorList[m_teamAColorIndex];
     }
   }
 
-  void nextColorIndexB(void){
+  void nextColorB(void){
     if (m_state != running){
-      m_teamBColorIndex = (colors_t)((int)m_teamBColorIndex+1);
-      if(m_teamBColorIndex >= NUM_COLORS)
+      m_teamAColorIndex = (colors_t)((int)m_teamBColorIndex+1);
+      if(m_teamBColorIndex >= m_colorList.size()){
         m_teamBColorIndex = (colors_t)0;
+      }
+      m_ColorB = m_colorList[m_teamBColorIndex];
     }
   }
 
@@ -235,10 +258,22 @@ private:
   bool m_bTimerStarted;
   states_t m_state, m_shotclockState;
   bool m_bUpdateDisplay, m_bUpdateShotclock;
+  rgb_matrix::Color m_ColorA;
+  rgb_matrix::Color m_ColorB;
+  std::vector<rgb_matrix::Color> m_colorList;
+
+
+
+    // color_white(200, 200, 200),
+    // color_yellow(250, 190, 0),
+    // color_red(255, 0, 0),
+    // color_blue(0, 50, 255),
+    // color_green(0, 200, 0),
+    // color_orange(250, 130, 0),
+    // color_violet(220, 0, 220),
 
 
 };
-
 
 
 #endif /* _DISPLAYDATA_HH_ */

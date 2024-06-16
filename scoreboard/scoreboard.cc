@@ -66,33 +66,8 @@ void ShotclockCom2 (DisplayData& dispData);
 void WsSocket (DisplayData& dispData);
 volatile bool bExit = false;
 
-
-rgb_matrix::Color color_red(255, 0, 0);
-rgb_matrix::Color color_yellow(250, 190, 0);
-rgb_matrix::Color color_blue(0, 50, 255);
-rgb_matrix::Color color_green(0, 200, 0);
-rgb_matrix::Color color_white(200, 200, 200);
-rgb_matrix::Color color_orange(250, 130, 0);
-rgb_matrix::Color color_violet(220, 0, 220);
-
 rgb_matrix::Color* pTimeColor;
 DisplayData dispData;
-
-
-rgb_matrix::Color* GetPColor(colors_t nColorIndex){
-  switch(nColorIndex){
-    case red:    return &color_red;
-    case yellow: return &color_yellow;
-    case blue:   return &color_blue;
-    case green:  return &color_green;
-    case orange: return &color_orange;
-    case violet: return &color_violet;
-    case white:
-    default:
-                 return &color_white;
-    }
-}
-
 
 using namespace std;
 
@@ -161,7 +136,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  pTimeColor = &color_white;;
+  rgb_matrix::Color color_white(200, 200, 200);
+  pTimeColor = &color_white;
 
   std::thread inputThread(KeyboardInput, std::ref(dispData));
   std::thread socketThread1(ShotclockCom1, std::ref(dispData));
@@ -177,10 +153,10 @@ int main(int argc, char *argv[]) {
 
       if(dispData.getScoreA() < 10){
         sprintf(sScoreA, "%d ", dispData.getScoreA());
-        rgb_matrix::DrawText(canvas, font_std, 0, 32, *GetPColor(dispData.getColorIndexA()), &bg_color, sScoreA, letter_spacing);
+        rgb_matrix::DrawText(canvas, font_std, 0, 32, *dispData.getColorA(), &bg_color, sScoreA, letter_spacing);
       } else{
         sprintf(sScoreA, "%2d ", dispData.getScoreA());
-        rgb_matrix::DrawText(canvas, font_narr, 0, 32, *GetPColor(dispData.getColorIndexA()), &bg_color, sScoreA, letter_spacing);
+        rgb_matrix::DrawText(canvas, font_narr, 0, 32, *dispData.getColorA(), &bg_color, sScoreA, letter_spacing);
       }
 
       sprintf(sTime, "%2d:%02d", dispData.getMin(), dispData.getSec());
@@ -196,13 +172,13 @@ int main(int argc, char *argv[]) {
 
       if(dispData.getScoreB() < 10){
         sprintf(sScoreB, "%d", dispData.getScoreB());
-        rgb_matrix::DrawText(canvas, font_std, 139, 32, *GetPColor(dispData.getColorIndexB()), &bg_color, sScoreB, letter_spacing);
+        rgb_matrix::DrawText(canvas, font_std, 139, 32, *dispData.getColorB(), &bg_color, sScoreB, letter_spacing);
       } else {
         sprintf(sScoreB, "%2d", dispData.getScoreB());
         if(dispData.getScoreB() < 20)
-          rgb_matrix::DrawText(canvas, font_narr, 128+5, 32, *GetPColor(dispData.getColorIndexB()), &bg_color, sScoreB, letter_spacing);
+          rgb_matrix::DrawText(canvas, font_narr, 128+5, 32, *dispData.getColorB(), &bg_color, sScoreB, letter_spacing);
         else
-          rgb_matrix::DrawText(canvas, font_narr, 128, 32, *GetPColor(dispData.getColorIndexB()), &bg_color, sScoreB, letter_spacing);
+          rgb_matrix::DrawText(canvas, font_narr, 128, 32, *dispData.getColorB(), &bg_color, sScoreB, letter_spacing);
       }
 
       #ifdef CURRENT_TEST
@@ -318,9 +294,9 @@ void onmessage(int fd, const unsigned char *msg, uint64_t size, int type)
     } else if(strstr((const char*)msg,"switch") != NULL){
       dispData.swapTeams();
     } else if(strstr((const char*)msg,"colorLeft") != NULL){
-      dispData.nextColorIndexA();
+      dispData.nextColorA();
     } else if(strstr((const char*)msg,"colorRight") != NULL){
-      dispData.nextColorIndexB();
+      dispData.nextColorB();
     } else if(strstr((const char*)msg,"timePlus") != NULL){
       dispData.modifyTime(60);
     } else if(strstr((const char*)msg,"timeMinus") != NULL){

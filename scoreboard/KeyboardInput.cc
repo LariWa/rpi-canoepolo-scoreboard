@@ -73,7 +73,7 @@ void KeyboardInput(DisplayData& dispData)
         if(nShutdownCnt > 150)
         {
           //system("echo raspberry | sudo -S poweroff");
-          system("sudo shutdown now");
+          //system("sudo shutdown now");
         }
         break;
       case 127: // backspace      (delete = 8 /'\b')?
@@ -130,10 +130,10 @@ void KeyboardInput(DisplayData& dispData)
         else if(find_seq(sBuf, decScoreB))  dispData.decScoreB();
 
         else if(find_seq(sBuf, colorChangeA)){
-          dispData.nextColorIndexA();
+          dispData.nextColorA();
         }
         else if(find_seq(sBuf, colorChangeB)){
-          dispData.nextColorIndexB();
+          dispData.nextColorB();
         }
         else if(find_seq(sBuf, resetShotclock)){
           dispData.resetShotclock();
