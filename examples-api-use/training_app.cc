@@ -40,8 +40,8 @@ bool run = false, reset = false;
 
 #define PLAY_TIME 600 // in sec
 #define PAUSE_TIME 10 // in sec
-#define POWERSAVE_TIME_1 10
-#define POWERSAVE_TIME_2 120
+#define POWERSAVE_TIME_1 100 // time until brightness switches to 50%
+#define POWERSAVE_TIME_2 120 // time until time display turns off
 
 void pollButtons()
 {
@@ -129,7 +129,7 @@ int Training_Application(RGBMatrix *matrix)
   gpioSetPullUpDown(21, PI_PUD_UP);
 
   printf("GPIO 21 (1): %d\n", gpioRead(21));
-  for(int i=0; i<500; i++){
+  for(int i=0; i<50; i++){
     if(gpioRead(21)) break;
     usleep(10000);
   }
@@ -164,11 +164,11 @@ int Training_Application(RGBMatrix *matrix)
     if(!run){
       if(powersaveCounter <= POWERSAVE_TIME_2) {
         powersaveCounter ++;
-        // if(powersaveCounter == POWERSAVE_TIME_1) {
-        //   CounterColor_normal = &color_white_50;
-        //   CounterColor_pause = &color_yellow_50;
-        //   printf("Set brightness to 50%%\n");
-        // }
+        if(powersaveCounter == POWERSAVE_TIME_1) {
+          CounterColor_normal = &color_white_50;
+          CounterColor_pause = &color_yellow_50;
+          printf("Set brightness to 50%%\n");
+        }
         if(powersaveCounter == POWERSAVE_TIME_2) {
           CounterColor_normal = &bg_color;
           CounterColor_pause = &bg_color;

@@ -73,8 +73,8 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  rgb_matrix::RuntimeOptions runtime;
-  runtime.gpio_slowdown = 1;
+  rgb_matrix::RuntimeOptions runtime_opt;
+  runtime_opt.gpio_slowdown = 1;
 
   RGBMatrix::Options options;
   options.hardware_mapping = "regular";  // or e.g. "adafruit-hat"
@@ -89,11 +89,12 @@ int main(int argc, char *argv[]) {
   options.multiplexing = 3;
   options.inverse_colors = false;
   options.led_rgb_sequence = "RGB";
-  options.pwm_bits = 2;
+  options.pwm_bits = 8;
   //options.disable_hardware_pulsing = 1;
 
 
-  RGBMatrix *matrix = rgb_matrix::CreateMatrixFromFlags(&argc, &argv, &options);
+  RGBMatrix *matrix = RGBMatrix::CreateFromOptions(options, runtime_opt);
+
   if (matrix == NULL)
     return 1;
   pRGBMatrix_gl = matrix;
