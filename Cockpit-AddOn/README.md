@@ -20,6 +20,3 @@ Updates from the time, score and team-color in the cockpit are sent to the score
 - zip the folder `Cockpit-AddOn` to install
 
 ![alt text](ReadMeImage.png)
-<br>
-
-[Icon created by Freepik](https://www.flaticon.com/free-icons/scoreboard)
