@@ -113,3 +113,40 @@ const scoreboard = (function () {
 
 scoreboard.connect();
 scoreboard.init();
+
+//add finish confirm dialog
+$(document).ready(function () {
+  var finishConfirmDialog =
+    '<div id="confirm-finish" title="Verify the result with the team captains, before submitting!">';
+  $("body").append(finishConfirmDialog);
+
+  var $oldElement = $("#matchControlButton");
+  var $newElement = $oldElement.clone();
+  $oldElement.replaceWith($newElement);
+
+  $newElement.on("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    if (cockpitStorage.getMatch().MatchStatus != matchStatus.Preliminary) {
+      kayakers.cpt.cockpit.updateMatchStatus(e);
+    } else {
+      $("#confirm-finish").dialog({
+        resizable: false,
+        height: "auto",
+        width: 400,
+        modal: true,
+        buttons: {
+          Continue: function () {
+            $(this).dialog("close");
+            kayakers.cpt.cockpit.updateMatchStatus(e);
+          },
+          Cancel: function () {
+            $(this).dialog("close");
+          },
+        },
+      });
+    }
+  });
+});
