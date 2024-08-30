@@ -88,7 +88,7 @@ const scoreboard = (function () {
       colorTeamA = _hexToRgbString(event.target.value);
     });
     $(".rightSide .teamName").append(
-      "<input type='color' class='colorPicker' id='changeColorTeamA' value='#00ff00'/>"
+      "<input type='color' class='colorPicker' id='changeColorTeamB' value='#00ff00'/>"
     );
     $(document).on("change", "#changeColorTeamB", function (event) {
       colorTeamB = _hexToRgbString(event.target.value);
