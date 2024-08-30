@@ -1,44 +1,46 @@
 const scoreboard = (function () {
   var server = "ws://scoreboard.local:8080";
   var ws;
-  var reconnectIntervall, updateIntervall;
-  var connected = false;
+  var reconnectInterval, updateInterval;
+  var connected = false,
   var colorTeamA = "255,0,0";
   var colorTeamB = "0,255,0";
   function _connect() {
-    if (connected) return;
+    if (connected || connecting) return;
+    ws.close();
     ws = new WebSocket(server);
-
+  
     ws.onopen = function () {
       connected = true;
       console.log("Connected to scoreboard");
-      clearInterval(reconnectIntervall);
-      updateIntervall = setInterval(function () {
+      clearInterval(reconnectInterval);
+      updateInterval = setInterval(function () {
         sendUpdate();
       }, 500);
       $("#scoreboardConnectionStatus").css("fill", "darkgreen");
     };
-
+  
     ws.onclose = function (event) {
       connected = false;
-      clearInterval(reconnectIntervall);
-      clearInterval(updateIntervall);
+      clearInterval(updateInterval);
       reconnect();
       $("#scoreboardConnectionStatus").css("fill", "darkred");
     };
-
+  
     ws.onerror = function (event) {
-      ws.onclose(event);
-
-      //for testing
-      //sendUpdate();
+      ws.close();
     };
-    function reconnect() {
-      reconnectIntervall = setInterval(function () {
+  
+  
+  function reconnect() {
+    if (reconnectInterval) return;
+    
+    reconnectInterval = setInterval(function () {
+      if (!connected) {
+        console.log("Trying to reconnect to scoreboard");
         _connect();
-      }, 1000);
-      console.log("Trying to reconnect to scoreboard");
-    }
+      }
+    }, 1000);
   }
 
   function sendUpdate() {
@@ -68,7 +70,7 @@ const scoreboard = (function () {
       //console.log(msg)
     }
   }
-
+}
   function _hexToRgbString(hex) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
@@ -79,6 +81,7 @@ const scoreboard = (function () {
           parseInt(result[3], 16)
       : null;
   }
+
 
   function _init(view) {
     $(".leftSide .teamName").append(
