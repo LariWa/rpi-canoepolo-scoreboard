@@ -1,76 +1,59 @@
 const scoreboard = (function () {
   var server = "ws://scoreboard.local:8080";
   var ws;
-  var reconnectInterval, updateInterval;
-  var connected = false,
+  var updateInterval;
   var colorTeamA = "255,0,0";
   var colorTeamB = "0,255,0";
+
+  $(window).on("beforeunload", function () {
+    socket.close();
+  });
   function _connect() {
-    if (connected || connecting) return;
-    ws.close();
-    ws = new WebSocket(server);
-  
+    ws = new ReconnectingWebSocket(server);
+
     ws.onopen = function () {
-      connected = true;
       console.log("Connected to scoreboard");
-      clearInterval(reconnectInterval);
       updateInterval = setInterval(function () {
         sendUpdate();
       }, 500);
       $("#scoreboardConnectionStatus").css("fill", "darkgreen");
     };
-  
+
     ws.onclose = function (event) {
-      connected = false;
       clearInterval(updateInterval);
-      reconnect();
       $("#scoreboardConnectionStatus").css("fill", "darkred");
     };
-  
-    ws.onerror = function (event) {
-      ws.close();
-    };
-  
-  
-  function reconnect() {
-    if (reconnectInterval) return;
-    
-    reconnectInterval = setInterval(function () {
-      if (!connected) {
-        console.log("Trying to reconnect to scoreboard");
-        _connect();
+
+    function sendUpdate() {
+      var msg = "";
+      if (cockpitStorage.getMatch() != null) {
+        var teamAData = {
+          score: $(".matchResult .goalsA").data("value"),
+          color: colorTeamA,
+        };
+
+        var teamBData = {
+          score: $(".matchResult .goalsB").data("value"),
+          color: colorTeamB,
+        };
+
+        if (cockpitStorage.getMatch().MatchStatus == matchStatus.FirstHalf) {
+          msg += `ScoreL=${teamAData.score};ColorL=${teamAData.color};`;
+          msg += `ScoreR=${teamBData.score};ColorR=${teamBData.color};`;
+        } else {
+          msg += `ScoreL=${teamBData.score};ColorL=${teamBData.color};`;
+          msg += `ScoreR=${teamAData.score};ColorR=${teamAData.color};`;
+        }
+        msg += `Time=${cockpitClock.getClockDatails().secondsRemaining};`;
+        msg += `Shotclock=${
+          cockpitClock.getClockDatails().shotClockRemaining
+        };`;
+        if (ws != null && ws.readyState == 1) ws.send(msg);
+        // for testing
+        //console.log(msg)
       }
-    }, 1000);
-  }
-
-  function sendUpdate() {
-    var msg = "";
-    if (cockpitStorage.getMatch() != null) {
-      var teamAData = {
-        score: $(".matchResult .goalsA").data("value"),
-        color: colorTeamA,
-      };
-
-      var teamBData = {
-        score: $(".matchResult .goalsB").data("value"),
-        color: colorTeamB,
-      };
-
-      if (cockpitStorage.getMatch().MatchStatus == matchStatus.FirstHalf) {
-        msg += `ScoreL=${teamAData.score};ColorL=${teamAData.color};`;
-        msg += `ScoreR=${teamBData.score};ColorR=${teamBData.color};`;
-      } else {
-        msg += `ScoreL=${teamBData.score};ColorL=${teamBData.color};`;
-        msg += `ScoreR=${teamAData.score};ColorR=${teamAData.color};`;
-      }
-      msg += `Time=${cockpitClock.getClockDatails().secondsRemaining};`;
-      msg += `Shotclock=${cockpitClock.getClockDatails().shotClockRemaining};`;
-      if (connected) ws.send(msg);
-      // for testing
-      //console.log(msg)
     }
   }
-}
   function _hexToRgbString(hex) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
@@ -81,7 +64,6 @@ const scoreboard = (function () {
           parseInt(result[3], 16)
       : null;
   }
-
 
   function _init(view) {
     $(".leftSide .teamName").append(

@@ -21,7 +21,7 @@
   "content_scripts": [
     {
       "css": ["styles.css"],
-      "js": ["content.js"],
+      "js": ["reconnecting-websocket.min.js", "content.js"],
 
       "world": "MAIN",
       "matches": [
