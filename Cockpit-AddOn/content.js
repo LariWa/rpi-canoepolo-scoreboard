@@ -26,7 +26,10 @@ const scoreboard = (function () {
 
     function sendUpdate() {
       var msg = "";
-      if (cockpitStorage.getMatch() != null) {
+      if (
+        cockpitStorage.getMatch() != null &&
+        cockpitStorage.getMatch().MatchStatus != matchStatus.NotPlayed
+      ) {
         var teamAData = {
           score: $(".matchResult .goalsA").data("value"),
           color: colorTeamA,
