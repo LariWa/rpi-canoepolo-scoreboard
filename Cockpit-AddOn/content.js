@@ -47,9 +47,9 @@ const scoreboard = (function () {
           msg += `ScoreL=${teamAData.score};ColorL=${teamAData.color};`;
           msg += `ScoreR=${teamBData.score};ColorR=${teamBData.color};`;
         }
-        msg += `Time=${cockpitClock.getClockDatails().secondsRemaining};`;
+        msg += `Time=${cockpitClock.getClockDetails().secondsRemaining};`;
         msg += `Shotclock=${
-          cockpitClock.getClockDatails().shotClockRemaining
+          cockpitClock.getClockDetails().shotClockRemaining
         };`;
         if (ws != null && ws.readyState == 1) ws.send(msg);
         // for testing
