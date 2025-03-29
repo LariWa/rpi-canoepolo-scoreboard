@@ -37,12 +37,12 @@ const scoreboard = (function () {
           color: colorTeamB,
         };
 
-        if (cockpitStorage.getMatch().MatchStatus == matchStatus.FirstHalf) {
-          msg += `ScoreL=${teamAData.score};ColorL=${teamAData.color};`;
-          msg += `ScoreR=${teamBData.score};ColorR=${teamBData.color};`;
-        } else {
+        if ($("#switchteams").prop("checked")) {
           msg += `ScoreL=${teamBData.score};ColorL=${teamBData.color};`;
           msg += `ScoreR=${teamAData.score};ColorR=${teamAData.color};`;
+        } else {
+          msg += `ScoreL=${teamAData.score};ColorL=${teamAData.color};`;
+          msg += `ScoreR=${teamBData.score};ColorR=${teamBData.color};`;
         }
         msg += `Time=${cockpitClock.getClockDatails().secondsRemaining};`;
         msg += `Shotclock=${
@@ -87,6 +87,17 @@ const scoreboard = (function () {
     $("#connectivityIndicator .container").append(
       "<div id='scoreboardConnectionStatus' class='scoreboardConnectionStatus knlTopMenu knlTopMenuSmall hidden-xs hidden-inApp' title='Connection status to scoreboard'> <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'> <path d='M176 0c-17.7 0-32 14.3-32 32s14.3 32 32 32h16V98.4C92.3 113.8 16 200 16 304c0 114.9 93.1 208 208 208s208-93.1 208-208c0-41.8-12.3-80.7-33.5-113.2l24.1-24.1c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L355.7 143c-28.1-23-62.2-38.8-99.7-44.6V64h16c17.7 0 32-14.3 32-32s-14.3-32-32-32H224 176zm72 192V320c0 13.3-10.7 24-24 24s-24-10.7-24-24V192c0-13.3 10.7-24 24-24s24 10.7 24 24z' /> </svg> </div>"
     );
+    $("#connectivityIndicator .container").append(
+      "<div class='knlTopMenu'><label><input type='checkbox' id='switchteams' /><span id='switchLabel'>Switch teams on scoreboard</span></label></div>"
+    );
+
+    // CSS for styling
+    $("#switchLabel").css({
+      "font-size": "12px",
+      color: "white",
+      display: "inline-block", // Ensures the text is inline with the checkbox
+      "margin-left": "5px", // Adds a small space between checkbox and text
+    });
   }
 
   const me = {
